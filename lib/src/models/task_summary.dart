@@ -16,7 +16,7 @@ class TaskSummary extends Equatable {
   final String? title;
   @JsonKey(defaultValue: TaskPriority.none)
   final TaskPriority priority;
-  @JsonKey(defaultValue: false)
+  @JsonKey(defaultValue: false, name: 'is_completed')
   final bool isCompleted;
 
   const TaskSummary({

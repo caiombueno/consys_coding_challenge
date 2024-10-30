@@ -1,4 +1,4 @@
-import 'package:consys_coding_challenge/src/models/task_summary.dart';
+import 'package:consys_coding_challenge/src/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:json_annotation/json_annotation.dart';
 

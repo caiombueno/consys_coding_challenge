@@ -16,7 +16,7 @@ TaskSummary _$TaskSummaryFromJson(Map<String, dynamic> json) {
     title: json['title'] as String?,
     priority: $enumDecodeNullable(_$TaskPriorityEnumMap, json['priority']) ??
         TaskPriority.none,
-    isCompleted: json['isCompleted'] as bool? ?? false,
+    isCompleted: json['is_completed'] as bool? ?? false,
   );
 }
 
@@ -25,7 +25,7 @@ Map<String, dynamic> _$TaskSummaryToJson(TaskSummary instance) =>
       'id': instance.id,
       'title': instance.title,
       'priority': _$TaskPriorityEnumMap[instance.priority]!,
-      'isCompleted': instance.isCompleted,
+      'is_completed': instance.isCompleted,
     };
 
 const _$TaskPriorityEnumMap = {
