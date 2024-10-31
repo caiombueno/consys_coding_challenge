@@ -87,5 +87,46 @@ void main() {
       expect(() => localStorageDataSource.remove(testKey),
           throwsA(isA<DataException>()));
     });
+
+    group('localStorageDataSourceProvider', () {
+      test(
+          'localStorageDataSourceProvider should return LocalStorageDataSource',
+          () async {
+        // Arrange
+        final container = createContainer(
+          overrides: [
+            sharedPreferencesProvider
+                .overrideWith((ref) => mockSharedPreferences),
+          ],
+        );
+
+        // Act
+        final localStorageDataSource =
+            await container.read(localStorageDataSourceProvider.future);
+
+        // Assert
+        expect(localStorageDataSource, isA<LocalStorageDataSource>());
+      });
+
+      test(
+          'localStorageDataSourceProvider throws EntityInitializationException if SharedPreferences fails',
+          () async {
+        // Arrange
+        final container = createContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWith(
+                (ref) => throw const EntityInitializationException()),
+          ],
+        );
+
+        // Act
+        final localStorageDataSource =
+            container.read(localStorageDataSourceProvider.future);
+
+        // Assert
+        expect(localStorageDataSource,
+            throwsA(isA<EntityInitializationException>()));
+      });
+    });
   });
 }

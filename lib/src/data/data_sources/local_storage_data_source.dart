@@ -1,20 +1,12 @@
 import 'dart:convert';
 import 'package:consys_coding_challenge/src/models/models.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageDataSource {
-  late final SharedPreferences _prefs;
+  final SharedPreferences _prefs;
 
-  Future<void> init(
-      {@visibleForTesting SharedPreferences? sharedPreferences}) async {
-    try {
-      _prefs = sharedPreferences ?? await SharedPreferences.getInstance();
-    } catch (e) {
-      throw const InitializationException();
-    }
-  }
+  const LocalStorageDataSource(this._prefs);
 
   Future<void> saveJson(String key, Map<String, dynamic> value) async {
     try {
@@ -48,7 +40,21 @@ class LocalStorageDataSource {
 
 final localStorageDataSourceProvider =
     FutureProvider.autoDispose<LocalStorageDataSource>((ref) async {
-  final dataSource = LocalStorageDataSource();
-  await dataSource.init();
-  return dataSource;
+  try {
+    final sharedPreferences = await ref.read(sharedPreferencesProvider.future);
+
+    return LocalStorageDataSource(sharedPreferences);
+  } catch (_) {
+    rethrow;
+  }
+});
+
+final sharedPreferencesProvider =
+    FutureProvider<SharedPreferences>((ref) async {
+  try {
+    final sharedPreferences = await SharedPreferences.getInstance();
+    return sharedPreferences;
+  } catch (e) {
+    throw const EntityInitializationException();
+  }
 });
