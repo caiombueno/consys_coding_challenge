@@ -14,7 +14,7 @@ class LocalStorageDataSource {
       final success = await _prefs.setString(key, jsonString);
       if (!success) throw Exception();
     } catch (e) {
-      throw const DataException(code: 'LOCAL_STORAGE_SAVE_FAILED');
+      throw const DataSaveException();
     }
   }
 
@@ -24,7 +24,7 @@ class LocalStorageDataSource {
       if (jsonString == null) throw Exception();
       return json.decode(jsonString) as Map<String, dynamic>;
     } catch (e) {
-      throw const DataException(code: 'LOCAL_STORAGE_READ_FAILED');
+      throw const DataAccessException();
     }
   }
 
@@ -33,7 +33,7 @@ class LocalStorageDataSource {
       final success = await _prefs.remove(key);
       if (!success) throw Exception();
     } catch (e) {
-      throw const DataException(code: 'LOCAL_STORAGE_REMOVE_FAILED');
+      throw const DataDeleteException();
     }
   }
 }

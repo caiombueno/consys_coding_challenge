@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks.dart';
+import '../../../../utils/create_container.dart';
 
 void main() {
   late MockLocalStorageDataSource mockLocalStorageDataSource;
@@ -110,6 +111,45 @@ void main() {
       // Assert
       verify(() => mockLocalStorageDataSource
           .saveJson(tasksKey, {'tasks': taskJson})).called(1);
+    });
+  });
+
+  group('localTaskDataSourceProvider', () {
+    test('localTaskDataSourceProvider should return LocalTaskDataSource',
+        () async {
+      // Arrange
+      final container = createContainer(
+        overrides: [
+          localStorageDataSourceProvider
+              .overrideWith((ref) => mockLocalStorageDataSource),
+        ],
+      );
+
+      // Act
+      final localTaskDataSource =
+          await container.read(localTaskDataSourceProvider.future);
+
+      // Assert
+      expect(localTaskDataSource, isA<LocalTaskDataSource>());
+    });
+
+    test(
+        'localStorageDataSourceProvider throws exception if localTaskDataSourceProvider fails',
+        () async {
+      // Arrange
+      final container = createContainer(
+        overrides: [
+          localStorageDataSourceProvider
+              .overrideWith((ref) => throw Exception()),
+        ],
+      );
+
+      // Act
+      final localStorageDataSource =
+          container.read(localStorageDataSourceProvider.future);
+
+      // Assert
+      expect(localStorageDataSource, throwsA(isA<Exception>()));
     });
   });
 }

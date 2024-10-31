@@ -47,7 +47,7 @@ void main() {
         'id': taskId,
         'title': taskTitle,
         'priority': 'high',
-        'isCompleted': isCompleted,
+        'is_completed': isCompleted,
       });
       expect(deserializedTask, taskSummary);
     });
@@ -110,7 +110,7 @@ void main() {
           'id': taskId,
           'title': null,
           'priority': 'none',
-          'isCompleted': false,
+          'is_completed': false,
         });
       });
     });

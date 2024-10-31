@@ -16,40 +16,49 @@ class LocalTaskDataSource extends TaskDataSource {
 
   @override
   List<TaskSummary> getTaskSummariesByTitle({String? title}) {
-    final List<TaskSummary> tasks = _tasksJson
-        .map((json) => TaskSummary.fromJson(json as Map<String, dynamic>))
-        .toList();
+    try {
+      final List<TaskSummary> tasks = _tasksJson
+          .map((json) => TaskSummary.fromJson(json as Map<String, dynamic>))
+          .toList();
 
-    if (title == null || title.isEmpty) return tasks;
+      if (title == null || title.isEmpty) return tasks;
 
-    return tasks
-        .where((task) =>
-            task.title != null &&
-            task.title!.toLowerCase().contains(title.toLowerCase()))
-        .toList();
+      return tasks
+          .where((task) =>
+              task.title != null &&
+              task.title!.toLowerCase().contains(title.toLowerCase()))
+          .toList();
+    } catch (_) {
+      throw const DataAccessException();
+    }
   }
 
   @override
   void deleteTask(TaskId id) {
-    final List<TaskSummary> tasks = allTaskSummaries;
+    try {
+      final List<TaskSummary> tasks = allTaskSummaries;
 
-    tasks.removeWhere((task) => task.id == id);
+      tasks.removeWhere((task) => task.id == id);
 
-    _localStorageDataSource.saveJson(_tasksKey, tasks.toJson());
+      _localStorageDataSource.saveJson(_tasksKey, tasks.toJson());
+    } on DataAccessException {
+      rethrow;
+    } catch (_) {
+      throw const DataDeleteException();
+    }
   }
 }
 
 final localTaskDataSourceProvider =
-    Provider.autoDispose<LocalTaskDataSource>((ref) {
-  final localStorageDataSourceState = ref.read(localStorageDataSourceProvider);
+    FutureProvider.autoDispose<LocalTaskDataSource>((ref) async {
+  try {
+    final localStorageDataSource =
+        await ref.read(localStorageDataSourceProvider.future);
 
-  final localStorageDataSource = localStorageDataSourceState.value;
-
-  if (localStorageDataSourceState.hasError || localStorageDataSource == null) {
-    throw const InitializationException();
+    return LocalTaskDataSource(localStorageDataSource);
+  } catch (_) {
+    rethrow;
   }
-
-  return LocalTaskDataSource(localStorageDataSource);
 });
 
 extension on List<TaskSummary> {

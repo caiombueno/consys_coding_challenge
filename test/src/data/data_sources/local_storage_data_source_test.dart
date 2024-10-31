@@ -1,10 +1,11 @@
-import 'package:consys_coding_challenge/src/data/data_sources/local_storage_data_source.dart';
+import 'package:consys_coding_challenge/src/data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:consys_coding_challenge/src/models/models.dart';
 
 import '../../../mocks.dart';
+import '../../../utils/create_container.dart';
 
 void main() {
   late MockSharedPreferences mockSharedPreferences;
@@ -13,8 +14,7 @@ void main() {
   setUp(() async {
     WidgetsFlutterBinding.ensureInitialized();
     mockSharedPreferences = MockSharedPreferences();
-    localStorageDataSource = LocalStorageDataSource();
-    await localStorageDataSource.init(sharedPreferences: mockSharedPreferences);
+    localStorageDataSource = LocalStorageDataSource(mockSharedPreferences);
   });
 
   group('LocalStorageDataSource', () {

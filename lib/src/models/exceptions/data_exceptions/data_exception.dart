@@ -1,15 +1,27 @@
-import 'package:equatable/equatable.dart';
+import 'package:consys_coding_challenge/src/models/models.dart';
 
-class DataException extends Equatable implements Exception {
-  final String code;
-  final String? message;
-
-  const DataException({required this.code, this.message});
-
-  @override
-  List<Object?> get props => [code, message];
+// Specific exceptions for common data source error scenarios
+class DataException extends AppException {
+  const DataException({required super.code, super.message});
 }
 
-class InitializationException extends DataException {
-  const InitializationException() : super(code: 'INITIALIZATION_FAILED');
+class DataAccessException extends DataException {
+  const DataAccessException()
+      : super(
+            code: "DATA-ACCESS-FAILED",
+            message: "Failed to access local storage.");
+}
+
+class DataSaveException extends DataException {
+  const DataSaveException()
+      : super(
+            code: "DATA-SAVE-FAILED",
+            message: "Failed to save data in local storage.");
+}
+
+class DataDeleteException extends DataException {
+  const DataDeleteException()
+      : super(
+            code: "DATA-DELETE-FAILED",
+            message: "Failed to delete data in local storage.");
 }
