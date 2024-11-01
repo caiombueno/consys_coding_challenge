@@ -2,13 +2,14 @@ import 'package:consys_coding_challenge/src/app/app.dart';
 import 'package:consys_coding_challenge/src/utils/string_hardcoded.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   _registerErrorHandlers();
 
-  runApp(const MainApp());
+  runApp(const ProviderScope(child: MainApp()));
 }
 
 void _registerErrorHandlers() {
