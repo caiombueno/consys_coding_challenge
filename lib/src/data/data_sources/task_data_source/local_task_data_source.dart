@@ -7,27 +7,29 @@ class LocalTaskDataSource extends TaskDataSource {
 
   final LocalStorageDataSource _localStorageDataSource;
 
-  const LocalTaskDataSource(this._localStorageDataSource);
+  LocalTaskDataSource(this._localStorageDataSource) {
+    final tasks = [
+      const TaskSummary(
+          id: '1', title: 'Test Task 1', priority: TaskPriority.high),
+      const TaskSummary(
+          id: '2', title: 'Another Task', priority: TaskPriority.medium),
+    ];
+
+    final tasksJson = tasks.toJson();
+    _localStorageDataSource.saveJson(_tasksKey, tasksJson);
+  }
 
   List<dynamic> get _tasksJson =>
       _localStorageDataSource.getJson(_tasksKey)['tasks'];
 
-  List<TaskSummary> get allTaskSummaries => getTaskSummariesByTitle();
-
   @override
-  List<TaskSummary> getTaskSummariesByTitle({String? title}) {
+  List<TaskSummary> get taskSummaries {
     try {
       final List<TaskSummary> tasks = _tasksJson
           .map((json) => TaskSummary.fromJson(json as Map<String, dynamic>))
           .toList();
 
-      if (title == null || title.isEmpty) return tasks;
-
-      return tasks
-          .where((task) =>
-              task.title != null &&
-              task.title!.toLowerCase().contains(title.toLowerCase()))
-          .toList();
+      return tasks;
     } catch (_) {
       throw const DataAccessException();
     }
@@ -36,7 +38,7 @@ class LocalTaskDataSource extends TaskDataSource {
   @override
   void deleteTask(TaskId id) {
     try {
-      final List<TaskSummary> tasks = allTaskSummaries;
+      final List<TaskSummary> tasks = taskSummaries;
 
       tasks.removeWhere((task) => task.id == id);
 
