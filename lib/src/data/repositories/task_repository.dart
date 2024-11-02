@@ -12,12 +12,11 @@ class TaskRepository {
     _updateTaskSummaries();
   }
 
-  // void dispose() => _taskSummariesSubject.close();
-
   // Load initial task summaries and add them to the BehaviorSubject
-  void _updateTaskSummaries() {
+  Future<void> _updateTaskSummaries() async {
     try {
-      final summaries = _localTaskDataSource.taskSummaries;
+      final summaries = await _localTaskDataSource.taskSummaries;
+
       _taskSummariesSubject.add(summaries);
     } catch (e) {
       _taskSummariesSubject.addError(const TaskSearchException());
@@ -28,30 +27,79 @@ class TaskRepository {
   Stream<List<TaskSummary>> get taskSummariesStream =>
       _taskSummariesSubject.stream;
 
-  void deleteTask(TaskId id) {
+  Future<List<Task>> get tasks async {
     try {
-      _localTaskDataSource.deleteTask(id);
+      return await _localTaskDataSource.tasks;
+    } catch (_) {
+      throw const TaskSearchException();
+    }
+  }
 
+  Future<void> createTask(Task newTask) async {
+    try {
+      await _localTaskDataSource.createTask(newTask);
+    } on DataAlreadyExistsException {
+      rethrow;
+    } catch (_) {
+      throw const TaskCreateException();
+    } finally {
       _updateTaskSummaries();
+    }
+  }
+
+  Future<void> deleteTask(TaskId id) async {
+    try {
+      await _localTaskDataSource.deleteTask(id);
     } catch (e) {
       throw const TaskDeleteException();
+    } finally {
+      _updateTaskSummaries();
+    }
+  }
+
+  Future<void> editTask(Task updatedTask,
+      {bool shouldUpdateTaskSummaries = true}) async {
+    try {
+      await _localTaskDataSource.editTask(updatedTask);
+    } on DataSearchException {
+      throw const TaskNotFoundException();
+    } catch (_) {
+      throw const TaskEditException();
+    } finally {
+      if (shouldUpdateTaskSummaries) await _updateTaskSummaries();
+    }
+  }
+
+  Future<Task> getTask(TaskId id) async {
+    try {
+      return await _localTaskDataSource.getTask(id);
+    } catch (_) {
+      throw const TaskNotFoundException();
+    }
+  }
+
+  Future<void> toggleTaskComplete(TaskId id) async {
+    try {
+      final task = await getTask(id);
+
+      final updatedTask = task.toggleComplete();
+
+      await editTask(updatedTask);
+    } catch (_) {
+      throw const TaskEditException();
+    } finally {
+      await _updateTaskSummaries();
     }
   }
 }
 
-final taskRepositoryProvider =
-    FutureProvider.autoDispose<TaskRepository>((ref) async {
+final taskRepositoryProvider = Provider.autoDispose<TaskRepository>((ref) {
   try {
     final taskSummariesSubject = BehaviorSubject<List<TaskSummary>>();
     ref.onDispose(() => taskSummariesSubject.close);
 
-    final localTaskDataSource =
-        await ref.read(localTaskDataSourceProvider.future);
-
-    final repository =
-        TaskRepository(localTaskDataSource, taskSummariesSubject);
-
-    return repository;
+    return TaskRepository(
+        ref.read(localTaskDataSourceProvider), taskSummariesSubject);
   } catch (_) {
     rethrow;
   }

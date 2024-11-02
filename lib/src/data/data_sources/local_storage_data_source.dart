@@ -4,25 +4,26 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageDataSource {
-  final SharedPreferences _prefs;
+  final SharedPreferencesAsync _prefs;
 
   const LocalStorageDataSource(this._prefs);
 
-  Future<void> saveJson(String key, Map<String, dynamic> value) async {
+  Future<void> saveJsonList(String key, List<Map<String, dynamic>> json) async {
     try {
-      final jsonString = json.encode(value);
-      final success = await _prefs.setString(key, jsonString);
-      if (!success) throw Exception();
+      final jsonStringList = json.toStringList();
+      await _prefs.setStringList(key, jsonStringList);
     } catch (e) {
       throw const DataSaveException();
     }
   }
 
-  Map<String, dynamic> getJson(String key) {
+  Future<List<Map<String, dynamic>>> getJsonList(String key) async {
     try {
-      final jsonString = _prefs.getString(key);
-      if (jsonString == null) throw Exception();
-      return json.decode(jsonString) as Map<String, dynamic>;
+      final jsonStringList = await _prefs.getStringList(key);
+
+      if (jsonStringList == null) throw const DataAccessException();
+
+      return jsonStringList.toJsonList();
     } catch (e) {
       throw const DataAccessException();
     }
@@ -30,8 +31,7 @@ class LocalStorageDataSource {
 
   Future<void> remove(String key) async {
     try {
-      final success = await _prefs.remove(key);
-      if (!success) throw Exception();
+      await _prefs.remove(key);
     } catch (e) {
       throw const DataDeleteException();
     }
@@ -39,9 +39,9 @@ class LocalStorageDataSource {
 }
 
 final localStorageDataSourceProvider =
-    FutureProvider.autoDispose<LocalStorageDataSource>((ref) async {
+    Provider.autoDispose<LocalStorageDataSource>((ref) {
   try {
-    final sharedPreferences = await ref.read(sharedPreferencesProvider.future);
+    final sharedPreferences = SharedPreferencesAsync();
 
     return LocalStorageDataSource(sharedPreferences);
   } catch (_) {
@@ -49,12 +49,11 @@ final localStorageDataSourceProvider =
   }
 });
 
-final sharedPreferencesProvider =
-    FutureProvider<SharedPreferences>((ref) async {
-  try {
-    final sharedPreferences = await SharedPreferences.getInstance();
-    return sharedPreferences;
-  } catch (e) {
-    throw const EntityInitializationException();
-  }
-});
+extension on List<Map<String, dynamic>> {
+  List<String> toStringList() => map((e) => json.encode(e)).toList();
+}
+
+extension on List<String> {
+  List<Map<String, dynamic>> toJsonList() =>
+      map((e) => json.decode(e) as Map<String, dynamic>).toList();
+}

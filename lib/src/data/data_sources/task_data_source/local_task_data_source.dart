@@ -9,25 +9,35 @@ class LocalTaskDataSource extends TaskDataSource {
 
   LocalTaskDataSource(this._localStorageDataSource) {
     final tasks = [
-      const TaskSummary(
-          id: '1', title: 'Test Task 1', priority: TaskPriority.high),
-      const TaskSummary(
-          id: '2', title: 'Another Task', priority: TaskPriority.medium),
+      const Task(id: '1', title: 'Test Task 1', priority: TaskPriority.high),
+      const Task(id: '2', title: 'Another Task', priority: TaskPriority.medium),
     ];
 
-    final tasksJson = tasks.toJson();
-    _localStorageDataSource.saveJson(_tasksKey, tasksJson);
+    final tasksJsonList = tasks.toJsonList();
+    _localStorageDataSource.saveJsonList(_tasksKey, tasksJsonList);
   }
 
-  List<dynamic> get _tasksJson =>
-      _localStorageDataSource.getJson(_tasksKey)['tasks'];
+  Future<List<Map<String, dynamic>>> get _tasksJsonList async =>
+      await _localStorageDataSource.getJsonList(_tasksKey);
 
   @override
-  List<TaskSummary> get taskSummaries {
+  Future<List<TaskSummary>> get taskSummaries async {
     try {
-      final List<TaskSummary> tasks = _tasksJson
-          .map((json) => TaskSummary.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final tasksJson = await _tasksJsonList;
+      final List<TaskSummary> tasks =
+          tasksJson.map((json) => TaskSummary.fromJson(json)).toList();
+
+      return tasks;
+    } catch (_) {
+      throw const DataAccessException();
+    }
+  }
+
+  Future<List<Task>> get tasks async {
+    try {
+      final tasksJson = await _tasksJsonList;
+      final List<Task> tasks =
+          tasksJson.map((json) => Task.fromJson(json)).toList();
 
       return tasks;
     } catch (_) {
@@ -36,34 +46,87 @@ class LocalTaskDataSource extends TaskDataSource {
   }
 
   @override
-  void deleteTask(TaskId id) {
+  Future<void> deleteTask(TaskId id) async {
     try {
-      final List<TaskSummary> tasks = taskSummaries;
+      final List<Task> tasks = await this.tasks;
 
-      tasks.removeWhere((task) => task.id == id);
+      tasks.removeTask(id);
 
-      _localStorageDataSource.saveJson(_tasksKey, tasks.toJson());
+      await _localStorageDataSource.saveJsonList(_tasksKey, tasks.toJsonList());
     } on DataAccessException {
       rethrow;
     } catch (_) {
       throw const DataDeleteException();
     }
   }
+
+  Future<void> createTask(Task newTask) async {
+    try {
+      final List<Task> tasks = await this.tasks;
+
+      final taskExists = tasks.any((task) => task.id == newTask.id);
+      if (taskExists) throw const DataAlreadyExistsException();
+
+      tasks.add(newTask);
+      await _localStorageDataSource.saveJsonList(_tasksKey, tasks.toJsonList());
+    } on DataAlreadyExistsException {
+      rethrow;
+    } catch (_) {
+      throw const DataSaveException();
+    }
+  }
+
+  Future<void> editTask(Task updatedTask) async {
+    try {
+      final List<Task> tasks = await this.tasks;
+
+      tasks.editTask(updatedTask);
+
+      // Save the updated list to local storage
+      await _localStorageDataSource.saveJsonList(_tasksKey, tasks.toJsonList());
+    } on DataSearchException {
+      rethrow;
+    } catch (_) {
+      throw const DataSaveException();
+    }
+  }
+
+  Future<Task> getTask(TaskId id) async {
+    try {
+      final List<Task> tasks = await this.tasks;
+
+      // Find the task with the specified ID
+      final task = tasks.firstWhere(
+        (task) => task.id == id,
+        orElse: () => throw const DataSearchException(),
+      );
+
+      return task;
+    } catch (_) {
+      throw const DataSearchException();
+    }
+  }
 }
 
-final localTaskDataSourceProvider =
-    FutureProvider.autoDispose<LocalTaskDataSource>((ref) async {
-  try {
-    final localStorageDataSource =
-        await ref.read(localStorageDataSourceProvider.future);
+final localTaskDataSourceProvider = Provider.autoDispose<LocalTaskDataSource>(
+    (ref) => LocalTaskDataSource(ref.read(localStorageDataSourceProvider)));
 
-    return LocalTaskDataSource(localStorageDataSource);
-  } catch (_) {
-    rethrow;
+extension on List<Task> {
+  List<Map<String, dynamic>> toJsonList() =>
+      map((task) => task.toJson()).toList();
+
+  void removeTask(TaskId id) {
+    removeWhere((task) => task.id == id);
   }
-});
 
-extension on List<TaskSummary> {
-  Map<String, dynamic> toJson() =>
-      {'tasks': map((task) => task.toJson()).toList()};
+  void editTask(Task updatedTask) {
+    // Find the index of the task with the specified ID
+    final index = indexWhere((task) => task.id == updatedTask.id);
+
+    // If the task is not found, return the list as-is
+    if (index == -1) throw const TaskNotFoundException();
+
+    // Replace the task at the found index with the updated task
+    this[index] = updatedTask;
+  }
 }
