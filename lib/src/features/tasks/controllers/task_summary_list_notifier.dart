@@ -4,26 +4,17 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
 
 class TaskSummaryListNotifier extends StreamNotifier<List<TaskSummary>> {
-  Future<TaskRepository> get _taskRepository async {
-    try {
-      return await ref.read(taskRepositoryProvider.future);
-    } catch (_) {
-      rethrow;
-    }
-  }
-
-  final BehaviorSubject<TaskSearchQuery> searchQuerySubject =
-      BehaviorSubject<TaskSearchQuery>.seeded((title: '', priority: null));
+  final BehaviorSubject<TaskSummaryListSearchQuery> searchQuerySubject =
+      BehaviorSubject<TaskSummaryListSearchQuery>.seeded(
+          (title: '', priority: null));
 
   @override
   Stream<List<TaskSummary>> build() async* {
-    // Ensure `searchQuerySubject` is closed when the provider is disposed
     ref.onDispose(searchQuerySubject.close);
 
-    final taskRepository = await _taskRepository;
+    final taskRepository = ref.watch(taskRepositoryProvider);
 
-    // Combine task summaries stream with the search query stream
-    yield* Rx.combineLatest2<List<TaskSummary>, TaskSearchQuery,
+    yield* Rx.combineLatest2<List<TaskSummary>, TaskSummaryListSearchQuery,
         List<TaskSummary>>(
       taskRepository.taskSummariesStream,
       searchQuerySubject.stream,
@@ -45,6 +36,12 @@ class TaskSummaryListNotifier extends StreamNotifier<List<TaskSummary>> {
     );
   }
 
+  void forceRefresh() {
+    final currentQuery = searchQuerySubject.value;
+    searchQuerySubject
+        .add(currentQuery); // Triggers a refresh with the current query
+  }
+
   void updateTitleSearch(String title) {
     searchQuerySubject.add(
       searchQuerySubject.value.copyWith(title: title),
@@ -63,13 +60,13 @@ final taskSummaryListControllerProvider =
   return TaskSummaryListNotifier();
 });
 
-typedef TaskSearchQuery = ({
+typedef TaskSummaryListSearchQuery = ({
   String title,
   TaskPriority? priority,
 });
 
-extension TaskSearchQueryCopyWith on TaskSearchQuery {
-  TaskSearchQuery copyWith({
+extension TaskSearchQueryCopyWith on TaskSummaryListSearchQuery {
+  TaskSummaryListSearchQuery copyWith({
     String? title,
     TaskPriority? priority,
   }) {

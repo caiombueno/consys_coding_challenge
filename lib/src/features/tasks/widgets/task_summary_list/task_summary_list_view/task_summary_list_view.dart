@@ -21,7 +21,8 @@ class TaskSummaryListView extends HookConsumerWidget {
           return const TaskSummaryListViewEmptyIndicator();
         }
 
-        return TaskSummaryListBuilder(taskSummaries: taskSummaries);
+        return TaskSummaryListBuilder(
+            key: ValueKey(taskSummaries), taskSummaries: taskSummaries);
       },
       loading: () => const TaskSummaryListViewLoadingIndicator(),
       error: (error, stackTrace) =>
