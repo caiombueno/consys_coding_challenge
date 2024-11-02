@@ -1,2 +1,2 @@
-export 'task_summary.dart';
+export 'task/task.dart';
 export 'exceptions/exceptions.dart';

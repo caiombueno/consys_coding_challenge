@@ -25,3 +25,17 @@ class DataDeleteException extends DataException {
             code: "DATA-DELETE-FAILED",
             message: "Failed to delete data in local storage.");
 }
+
+class DataSearchException extends DataException {
+  const DataSearchException()
+      : super(
+            code: "DATA-SEARCH-FAILED",
+            message: "Failed to find data in local storage.");
+}
+
+class DataAlreadyExistsException extends DataException {
+  const DataAlreadyExistsException()
+      : super(
+            code: "DATA-ALREADY-EXISTS",
+            message: "Object with same ID already exists.");
+}
