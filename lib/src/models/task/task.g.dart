@@ -12,7 +12,7 @@ Task _$TaskFromJson(Map<String, dynamic> json) {
     requiredKeys: const ['id'],
   );
   return Task(
-    id: json['id'],
+    id: json['id'] as String,
     title: json['title'] as String?,
     description: json['description'] as String?,
     priority: $enumDecodeNullable(_$TaskPriorityEnumMap, json['priority']) ??
