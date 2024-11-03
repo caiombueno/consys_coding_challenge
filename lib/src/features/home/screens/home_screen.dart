@@ -1,4 +1,5 @@
 import 'package:consys_coding_challenge/src/features/tasks/tasks.dart';
+import 'package:consys_coding_challenge/src/features/tasks/widgets/task_form_dialog/task_form_dialog.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,8 +18,13 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.refresh),
+        onPressed: () async {
+          await showDialog(
+            context: context,
+            builder: (_) => const TaskCreateFormDialog(),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

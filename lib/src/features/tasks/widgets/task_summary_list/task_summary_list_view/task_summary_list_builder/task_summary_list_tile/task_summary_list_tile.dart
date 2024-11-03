@@ -1,5 +1,6 @@
 import 'package:consys_coding_challenge/src/features/tasks/controllers/controllers.dart';
 import 'package:consys_coding_challenge/src/models/models.dart';
+import 'package:consys_coding_challenge/src/routing/routing.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -96,6 +97,11 @@ class TaskSummaryListTile extends StatelessWidget {
         style: TextStyle(
           decoration: task.isCompleted ? TextDecoration.lineThrough : null,
         ),
+      ),
+      trailing: IconButton(
+        iconSize: 16.0,
+        onPressed: () => TaskDetailsRoute(task.id).push(context),
+        icon: const Icon(Icons.arrow_forward_ios),
       ),
     );
   }
