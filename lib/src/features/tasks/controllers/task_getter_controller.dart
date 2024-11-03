@@ -6,14 +6,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class TaskGetterController
     extends AutoDisposeFamilyAsyncNotifier<Task, TaskId> {
-  late final TaskId taskId;
-
   @override
   Future<Task> build(TaskId arg) async {
-    taskId = arg;
-
     final taskRepository = ref.read(taskRepositoryProvider);
-    return await taskRepository.getTask(taskId);
+    return await taskRepository.getTask(arg);
   }
 }
 

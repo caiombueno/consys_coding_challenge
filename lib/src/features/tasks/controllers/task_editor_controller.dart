@@ -4,20 +4,17 @@ import 'package:consys_coding_challenge/src/data/data.dart';
 import 'package:consys_coding_challenge/src/models/models.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class TaskEditorController extends AutoDisposeFamilyAsyncNotifier<void, Task> {
-  late final Task task;
-
+class TaskEditorController
+    extends AutoDisposeFamilyAsyncNotifier<bool, TaskId> {
   @override
-  FutureOr build(Task arg) {
-    task = arg;
-  }
+  FutureOr<bool> build(TaskId arg) => false;
 
-  Future<void> editTask() async {
+  Future<void> editTask(Task task) async {
     state = const AsyncLoading();
     try {
       final taskRepository = ref.read(taskRepositoryProvider);
       await taskRepository.editTask(task);
-      state = const AsyncData(null);
+      state = const AsyncData(true);
     } catch (e) {
       state = AsyncError(e, StackTrace.current);
     }
@@ -25,4 +22,4 @@ class TaskEditorController extends AutoDisposeFamilyAsyncNotifier<void, Task> {
 }
 
 final taskEditorControllerProvider = AsyncNotifierProvider.autoDispose
-    .family<TaskEditorController, void, Task>(TaskEditorController.new);
+    .family<TaskEditorController, bool, TaskId>(TaskEditorController.new);

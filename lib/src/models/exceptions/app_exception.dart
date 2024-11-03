@@ -7,6 +7,9 @@ abstract class AppException extends Equatable implements Exception {
   const AppException({required this.code, this.message});
 
   @override
+  String toString() => message ?? super.toString();
+
+  @override
   List<Object?> get props => [code, message];
 }
 

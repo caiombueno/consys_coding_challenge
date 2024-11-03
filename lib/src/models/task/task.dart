@@ -1,6 +1,7 @@
 import 'package:consys_coding_challenge/src/models/models.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:equatable/equatable.dart';
+import 'package:uuid/uuid.dart';
 
 export 'task_id.dart';
 export 'task_priority.dart';
@@ -33,9 +34,7 @@ class Task extends Equatable {
     this.updatedAt,
   });
 
-  /// Factory constructor to create a Task with the current date
   factory Task.create({
-    required TaskId id,
     String? title,
     String? description,
     TaskPriority priority = TaskPriority.none,
@@ -44,7 +43,7 @@ class Task extends Equatable {
   }) {
     final currentDate = DateTime.now();
     return Task(
-      id: id,
+      id: const Uuid().v1(),
       title: title,
       description: description,
       priority: priority,

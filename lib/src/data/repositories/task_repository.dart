@@ -57,8 +57,7 @@ class TaskRepository {
     }
   }
 
-  Future<void> editTask(Task updatedTask,
-      {bool shouldUpdateTaskSummaries = true}) async {
+  Future<void> editTask(Task updatedTask) async {
     try {
       await _localTaskDataSource.editTask(updatedTask);
     } on DataSearchException {
@@ -66,7 +65,7 @@ class TaskRepository {
     } catch (_) {
       throw const TaskEditException();
     } finally {
-      if (shouldUpdateTaskSummaries) await _updateTaskSummaries();
+      await _updateTaskSummaries();
     }
   }
 
@@ -87,8 +86,6 @@ class TaskRepository {
       await editTask(updatedTask);
     } catch (_) {
       throw const TaskEditException();
-    } finally {
-      await _updateTaskSummaries();
     }
   }
 }
