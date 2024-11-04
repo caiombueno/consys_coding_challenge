@@ -22,4 +22,4 @@ O **Repository Pattern** atua como uma interface entre as fontes de dados e as d
 
 https://github.com/user-attachments/assets/d4cb1525-5f67-41ec-9186-30601824b331
 
-(Espere até o final para ver o reminder em ação!)
+(Veja até o final para ver o reminder em ação!)
