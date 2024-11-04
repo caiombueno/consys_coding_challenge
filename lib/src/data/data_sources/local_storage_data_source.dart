@@ -40,13 +40,9 @@ class LocalStorageDataSource {
 
 final localStorageDataSourceProvider =
     Provider.autoDispose<LocalStorageDataSource>((ref) {
-  try {
-    final sharedPreferences = SharedPreferencesAsync();
+  final sharedPreferences = SharedPreferencesAsync();
 
-    return LocalStorageDataSource(sharedPreferences);
-  } catch (_) {
-    rethrow;
-  }
+  return LocalStorageDataSource(sharedPreferences);
 });
 
 extension on List<Map<String, dynamic>> {

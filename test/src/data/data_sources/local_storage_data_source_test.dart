@@ -5,128 +5,96 @@ import 'package:mocktail/mocktail.dart';
 import 'package:consys_coding_challenge/src/models/models.dart';
 
 import '../../../mocks.dart';
-import '../../../utils/create_container.dart';
 
 void main() {
-  late MockSharedPreferences mockSharedPreferences;
-  late LocalStorageDataSource localStorageDataSource;
-
-  setUp(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    mockSharedPreferences = MockSharedPreferences();
-    localStorageDataSource = LocalStorageDataSource(mockSharedPreferences);
-  });
-
   group('LocalStorageDataSource', () {
-    const testKey = 'test_key';
-    final testJson = {'key': 'value'};
-    const jsonString = '{"key":"value"}';
+    late MockSharedPreferencesAsync mockSharedPreferencesAsync;
+    late LocalStorageDataSource localStorageDataSource;
 
-    test('saveJson should save JSON to SharedPreferences', () async {
+    setUp(() async {
+      WidgetsFlutterBinding.ensureInitialized();
+      mockSharedPreferencesAsync = MockSharedPreferencesAsync();
+      localStorageDataSource =
+          LocalStorageDataSource(mockSharedPreferencesAsync);
+    });
+    const testKey = 'test_key';
+    final testJsonList = [
+      {'key': 'value'},
+    ];
+    final jsonStringList = ['{"key":"value"}'];
+
+    test('saveJsonList should save JSON list to SharedPreferences', () async {
       // Arrange
-      when(() => mockSharedPreferences.setString(testKey, jsonString))
+      when(() =>
+              mockSharedPreferencesAsync.setStringList(testKey, jsonStringList))
           .thenAnswer((_) async => true);
 
       // Act
-      await localStorageDataSource.saveJson(testKey, testJson);
+      await localStorageDataSource.saveJsonList(testKey, testJsonList);
 
       // Assert
-      verify(() => mockSharedPreferences.setString(testKey, jsonString))
+      verify(() =>
+              mockSharedPreferencesAsync.setStringList(testKey, jsonStringList))
           .called(1);
     });
 
-    test('saveJson should throw DataException if saving fails', () async {
+    test('saveJsonList should throw DataSaveException if saving fails',
+        () async {
       // Arrange
-      when(() => mockSharedPreferences.setString(testKey, jsonString))
-          .thenAnswer((_) async => false);
+      when(() =>
+              mockSharedPreferencesAsync.setStringList(testKey, jsonStringList))
+          .thenThrow(const DataSaveException());
 
       // Act & Assert
-      expect(() => localStorageDataSource.saveJson(testKey, testJson),
-          throwsA(isA<DataException>()));
+      expect(() => localStorageDataSource.saveJsonList(testKey, testJsonList),
+          throwsA(isA<DataSaveException>()));
     });
 
-    test('getJson should return JSON from SharedPreferences', () {
+    test('getJsonList should return JSON list from SharedPreferences',
+        () async {
       // Arrange
-      when(() => mockSharedPreferences.getString(testKey))
-          .thenReturn(jsonString);
+      when(() => mockSharedPreferencesAsync.getStringList(testKey))
+          .thenAnswer((_) async => jsonStringList);
 
       // Act
-      final result = localStorageDataSource.getJson(testKey);
+      final result = await localStorageDataSource.getJsonList(testKey);
 
       // Assert
-      expect(result, testJson);
+      expect(result, testJsonList);
     });
 
-    test('getJson should throw DataException if JSON is not found', () {
+    test(
+        'getJsonList should throw DataAccessException if JSON list is not found',
+        () async {
       // Arrange
-      when(() => mockSharedPreferences.getString(testKey)).thenReturn(null);
+      when(() => mockSharedPreferencesAsync.getStringList(testKey))
+          .thenAnswer((_) async => null);
 
       // Act & Assert
-      expect(() => localStorageDataSource.getJson(testKey),
-          throwsA(isA<DataException>()));
+      expect(() => localStorageDataSource.getJsonList(testKey),
+          throwsA(isA<DataAccessException>()));
     });
 
-    test('remove should remove JSON from SharedPreferences', () async {
+    test('remove should remove JSON list from SharedPreferences', () async {
       // Arrange
-      when(() => mockSharedPreferences.remove(testKey))
+      when(() => mockSharedPreferencesAsync.remove(testKey))
           .thenAnswer((_) async => true);
 
       // Act
       await localStorageDataSource.remove(testKey);
 
       // Assert
-      verify(() => mockSharedPreferences.remove(testKey)).called(1);
+      verify(() => mockSharedPreferencesAsync.remove(testKey)).called(1);
     });
 
-    test('remove should throw DataException if removal fails', () async {
+    test('remove should throw DataDeleteException if removal fails', () async {
       // Arrange
-      when(() => mockSharedPreferences.remove(testKey))
-          .thenAnswer((_) async => false);
+      when(() => mockSharedPreferencesAsync.remove(testKey))
+          .thenThrow(const DataDeleteException());
 
       // Act & Assert
       expect(() => localStorageDataSource.remove(testKey),
-          throwsA(isA<DataException>()));
-    });
-
-    group('localStorageDataSourceProvider', () {
-      test(
-          'localStorageDataSourceProvider should return LocalStorageDataSource',
-          () async {
-        // Arrange
-        final container = createContainer(
-          overrides: [
-            sharedPreferencesProvider
-                .overrideWith((ref) => mockSharedPreferences),
-          ],
-        );
-
-        // Act
-        final localStorageDataSource =
-            await container.read(localStorageDataSourceProvider.future);
-
-        // Assert
-        expect(localStorageDataSource, isA<LocalStorageDataSource>());
-      });
-
-      test(
-          'localStorageDataSourceProvider throws EntityInitializationException if SharedPreferences fails',
-          () async {
-        // Arrange
-        final container = createContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWith(
-                (ref) => throw const EntityInitializationException()),
-          ],
-        );
-
-        // Act
-        final localStorageDataSource =
-            container.read(localStorageDataSourceProvider.future);
-
-        // Assert
-        expect(localStorageDataSource,
-            throwsA(isA<EntityInitializationException>()));
-      });
+          throwsA(isA<DataDeleteException>()));
     });
   });
 }
