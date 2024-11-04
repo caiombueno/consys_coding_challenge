@@ -8,8 +8,9 @@ class TaskRepository {
 
   final BehaviorSubject<List<TaskSummary>> _taskSummariesSubject;
 
-  TaskRepository(this._localTaskDataSource, this._taskSummariesSubject) {
-    _updateTaskSummaries();
+  TaskRepository(this._localTaskDataSource, this._taskSummariesSubject,
+      {bool loadInitialData = true}) {
+    if (loadInitialData) _updateTaskSummaries();
   }
 
   // Load initial task summaries and add them to the BehaviorSubject

@@ -103,7 +103,7 @@ class LocalTaskDataSource extends TaskDataSource {
 final localTaskDataSourceProvider = Provider.autoDispose<LocalTaskDataSource>(
     (ref) => LocalTaskDataSource(ref.read(localStorageDataSourceProvider)));
 
-extension on List<Task> {
+extension TaskListX on List<Task> {
   List<Map<String, dynamic>> toJsonList() =>
       map((task) => task.toJson()).toList();
 
