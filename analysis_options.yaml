@@ -1,1 +1,5 @@
 include: package:flutter_lints/flutter.yaml
+analyzer:
+  errors:
+    unused_result: ignore
+    invalid_use_of_visible_for_overriding_member: ignore 
