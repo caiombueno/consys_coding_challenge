@@ -1,4 +1,3 @@
-import 'package:consys_coding_challenge/src/data/data.dart';
 import 'package:consys_coding_challenge/src/features/tasks/controllers/controllers.dart';
 import 'package:consys_coding_challenge/src/features/tasks/tasks.dart';
 import 'package:consys_coding_challenge/src/features/tasks/widgets/task_summary_list/task_summary_list_view/task_summary_list_builder/task_summary_list_builder.dart';
