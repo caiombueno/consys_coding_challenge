@@ -1,8 +1,10 @@
+import 'package:consys_coding_challenge/src/features/reminders/controllers/task_reminder_creator_controller.dart';
 import 'package:consys_coding_challenge/src/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class TaskFormActionRow extends StatelessWidget {
+class TaskFormActionRow extends HookConsumerWidget {
   const TaskFormActionRow({
     super.key,
     required this.task,
@@ -10,6 +12,7 @@ class TaskFormActionRow extends StatelessWidget {
     required this.descriptionController,
     required this.selectedPriority,
     required this.dueDate,
+    required this.reminderDate,
     required this.onSubmit,
   });
 
@@ -18,10 +21,32 @@ class TaskFormActionRow extends StatelessWidget {
   final TextEditingController descriptionController;
   final ObjectRef<TaskPriority> selectedPriority;
   final ObjectRef<DateTime?> dueDate;
+  final ObjectRef<DateTime?> reminderDate;
   final void Function(Task) onSubmit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final taskReminderCreatorController =
+        ref.read(taskReminderCreatorControllerProvider.notifier);
+
+    ref.listen(taskReminderCreatorControllerProvider, (prev, next) {
+      if (next.asData?.value == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reminder created successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (next.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to create reminder'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -30,7 +55,7 @@ class TaskFormActionRow extends StatelessWidget {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             final task = this.task;
 
             final title = titleController.nullableText;
@@ -51,6 +76,14 @@ class TaskFormActionRow extends StatelessWidget {
                     priority: priority,
                     dueDate: date,
                   );
+
+            final reminderDateValue = reminderDate.value;
+            if (reminderDateValue != null) {
+              await taskReminderCreatorController.createReminder(
+                task: newTask,
+                scheduledDate: reminderDateValue,
+              );
+            }
 
             onSubmit(newTask);
           },

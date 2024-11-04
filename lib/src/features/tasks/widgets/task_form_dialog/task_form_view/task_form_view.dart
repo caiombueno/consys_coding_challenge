@@ -1,8 +1,7 @@
 import 'package:consys_coding_challenge/src/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-
-import 'due_date_selector_widget.dart';
+import 'date_selector_widget.dart';
 import 'task_form_action_row.dart';
 import 'task_form_description_text_field.dart';
 import 'task_form_priority_selector_widget.dart';
@@ -25,6 +24,8 @@ class TaskFormView extends HookWidget {
 
     final dueDate = useRef<DateTime?>(task?.dueDate);
 
+    final reminderDate = useRef<DateTime?>(null);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -40,7 +41,16 @@ class TaskFormView extends HookWidget {
         const SizedBox(height: 12),
         TaskFormPrioritySelectorWidget(selectedPriority: selectedPriority),
         const SizedBox(height: 12),
-        DueDateSelectorWidget(dueDateRef: dueDate),
+        DateSelectorWidget(
+          title: 'Select due date',
+          emptyDateSubtitle: 'No due date',
+          dateRef: dueDate,
+        ),
+        DateSelectorWidget(
+          title: 'Set reminder',
+          emptyDateSubtitle: 'No reminder',
+          dateRef: reminderDate,
+        ),
         const SizedBox(height: 24),
         TaskFormActionRow(
           task: task,
@@ -49,6 +59,7 @@ class TaskFormView extends HookWidget {
           selectedPriority: selectedPriority,
           dueDate: dueDate,
           onSubmit: onSubmit,
+          reminderDate: reminderDate,
         ),
       ],
     );
