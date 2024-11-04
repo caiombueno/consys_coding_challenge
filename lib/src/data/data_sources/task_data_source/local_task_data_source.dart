@@ -7,15 +7,7 @@ class LocalTaskDataSource extends TaskDataSource {
 
   final LocalStorageDataSource _localStorageDataSource;
 
-  LocalTaskDataSource(this._localStorageDataSource) {
-    final tasks = [
-      const Task(id: '1', title: 'Test Task 1', priority: TaskPriority.high),
-      const Task(id: '2', title: 'Another Task', priority: TaskPriority.medium),
-    ];
-
-    final tasksJsonList = tasks.toJsonList();
-    _localStorageDataSource.saveJsonList(_tasksKey, tasksJsonList);
-  }
+  LocalTaskDataSource(this._localStorageDataSource);
 
   Future<List<Map<String, dynamic>>> get _tasksJsonList async =>
       await _localStorageDataSource.getJsonList(_tasksKey);
